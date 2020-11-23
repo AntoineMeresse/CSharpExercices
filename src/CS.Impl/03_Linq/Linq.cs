@@ -9,26 +9,37 @@ namespace CS.Impl._03_Linq
     {
         public IEnumerable<string> FindStringsWhichStartsAndEndsWithSpecificCharacter(string startCharacter, string endCharacter, IEnumerable<string> strings)
         {
+            /*
             List<string> res = new List<string>();
             foreach (string s in strings)
             {
                 if (s.Length > 2 && s[0].ToString().Equals(startCharacter) && s[s.Length - 1].ToString().Equals(endCharacter)) res.Add(s);
             }
             return res;
+            */
+            return from s in strings
+                   where (s.StartsWith(startCharacter) && s.EndsWith(endCharacter))
+                   select s;
         }
 
         public IEnumerable<int> GetGreaterNumbers(int limit, IEnumerable<int> numbers)
         {
+            /*
             List<int> res = new List<int>();
             foreach (int i in numbers)
             {
                 if (i > limit) res.Add(i);
             }
             return res;
+            */
+            return from i in numbers
+                   where i > limit
+                   select i;
         }
 
         public IEnumerable<int> GetTopNRecords(int limit, IEnumerable<int> numbers)
         {
+            /*
             List<int> res = new List<int>();
             List<int> cpy = numbers.ToList();
             int currentMax;
@@ -39,10 +50,17 @@ namespace CS.Impl._03_Linq
                 cpy.Remove(currentMax);
             }
             return res;
+            */
+            // Solution prof : numbers.OrderBy(n=>n).TakeLast(limit);
+            var r = (from i in numbers
+                    orderby i descending
+                    select i).ToArray().Take(limit);
+            return r;
         }
 
         public IDictionary<string, int> GetFileCountByExtension(IEnumerable<string> files)
         {
+            /*
             Dictionary<string, int> res = new Dictionary<string, int>();
             string currentExtension;
             int currentValue;
@@ -60,10 +78,17 @@ namespace CS.Impl._03_Linq
                 }
             }
             return res;
+            */
+            var groupedFiles = files.Select(file => Path.GetExtension(file).TrimStart('.').ToLower())
+                .GroupBy(group => group, (extension, extensionCount) => new { Entension = extension, Count = extensionCount.Count() });
+
+            return groupedFiles.ToDictionary(d => d.Entension, d => d.Count);
+              
         }
 
         public IEnumerable<Tuple<string, string, int, double>> GetFinalReceipe(List<Item> items, List<Client> clients, List<Purchase> purchases)
         {
+            /*
             List<Tuple<string, string, int, double>> res = new List<Tuple<string, string, int, double>>();
             Tuple<string, string, int, double> current;
             string name = "";
@@ -98,6 +123,11 @@ namespace CS.Impl._03_Linq
                 res.Add(current);
             }
             return res;
+            */
+            return from purchase in purchases
+                   join item in items on purchase.ItemId equals item.Id
+                   join client in clients on purchase.ClientId equals client.Id
+                   select new Tuple<string, string, int, double>(client.Name, item.Label, purchase.Quantity, item.Price);
         }
     }
 
